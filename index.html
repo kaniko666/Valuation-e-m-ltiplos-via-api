@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App de Valuation & Múltiplos - PWA</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --success: #059669;
+            --danger: #dc2626;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --border-color: #e5e7eb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background-color: var(--card-bg);
+            min-height: 100vh;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1.25rem;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.25rem;
+        }
+
+        header p {
+            margin: 0.25rem 0 0;
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        .content {
+            padding: 1.25rem;
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 5rem;
+        }
+
+        .step-section {
+            display: none;
+        }
+
+        .step-section.active {
+            display: block;
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            color: var(--primary);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.3rem;
+            margin-top: 0;
+        }
+
+        .form-group {
+            margin-bottom: 0.85rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.65rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            background-color: #ffffff;
+            color: var(--text-color);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        button {
+            flex: 1;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button.secondary {
+            background-color: #6b7280;
+        }
+
+        button.success-btn {
+            background-color: var(--success);
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .card {
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 0.85rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .card h3 {
+            margin: 0 0 0.5rem;
+            font-size: 0.95rem;
+            color: var(--primary);
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .result-row span:last-child {
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            font-size: 0.75rem;
+            border-collapse: collapse;
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 0.4rem;
+            text-align: right;
+        }
+
+        th:first-child, td:first-child {
+            text-align: left;
+        }
+
+        th {
+            background-color: #e2e8f0;
+        }
+
+        .alert-box {
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            color: var(--danger);
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #e5e7eb;
+            padding: 0.25rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+        }
+
+        .nav-tab {
+            flex: 1;
+            text-align: center;
+            padding: 0.4rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 0.25rem;
+            background: transparent;
+            color: var(--text-color);
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .api-card { background:#f0fdf4; border-color:#bbf7d0; }
+        .api-card h3 { color:#166534; }
+        .api-status { font-size:0.8rem; margin-top:0.5rem; line-height:1.4; display:none; }
+        .api-status.ok { color:#166534; display:block; }
+        .api-status.err { color:var(--danger); display:block; }
+        .api-row { display:flex; gap:0.5rem; }
+        .api-row input { flex:1; }
+        .api-row button { flex:0 0 auto; padding:0.65rem 0.9rem; font-size:0.9rem; }
+
+        .preset-card {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+        }
+        .preset-card h3 {
+            color: #1e40af;
+        }
+        .chips-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            margin-top: 0.6rem;
+        }
+        .ticker-chip {
+            flex: 0 0 auto;
+            padding: 0.3rem 0.55rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 999px;
+            background-color: #dbeafe;
+            color: #1e3a8a;
+            border: 1px solid #93c5fd;
+            cursor: pointer;
+        }
+        .ticker-chip:hover, .ticker-chip.selected {
+            background-color: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+        .active-stock-badge {
+            background-color: #eef2ff;
+            border: 1px solid #c7d2fe;
+            color: #1e3a8a;
+            padding: 0.55rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 0.85rem;
+            display: none;
+        }
+        details.token-box {
+            margin-top: 0.6rem;
+            font-size: 0.78rem;
+            color: #166534;
+        }
+        details.token-box summary {
+            cursor: pointer;
+            font-weight: 600;
+            user-select: none;
+        }
+        details.token-box .token-inner {
+            margin-top: 0.45rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Valuation & Múltiplos PWA</h1>
+        <p>FCFF, FCFE e Indicadores Fundamentalistas</p>
+    </header>
+
+    <div class="content">
+        <div id="errorAlert" class="alert-box"></div>
+        <div id="activeStockBadge" class="active-stock-badge"></div>
+
+        <!-- TELA 1: INÍCIO -->
+        <div id="screen1" class="step-section active">
+            <h2>Bem-vindo</h2>
+            <p style="font-size: 0.9rem; line-height: 1.4;">
+                Este aplicativo calcula o Valuation por Fluxo de Caixa Descontado (FCFF e FCFE) e gera os principais múltiplos e indicadores fundamentalistas.
+            </p>
+            
+            <div class="card" style="margin-top: 1rem; background-color: #eff6ff; border-color: #bfdbfe;">
+                <h3 style="color: #1e40af; margin-bottom: 0.35rem;">Integrantes do Grupo</h3>
+                <p style="font-size: 0.85rem; margin: 0; line-height: 1.4;">
+                    • Ana Luise Francisco Monteiro <br>
+                    • Afonso Vieira Cordeiro<br>
+                    • Canico Maria Pessanha De Azevedo <br>
+                </p>
+            </div>
+
+            <div class="card preset-card" style="margin-top: 0.85rem;">
+                <h3>Top 20 Ações do Ibovespa (Sem precisar de token)</h3>
+                <p style="font-size: 0.8rem; margin: 0 0 0.6rem; color: #334155; line-height: 1.35;">
+                    Escolha qualquer uma das 20 empresas abaixo. Os dados operacionais, balanço, múltiplos e premissas já vêm prontos e funcionam 100% sem token:
+                </p>
+                <div class="form-group" style="margin-bottom: 0.6rem;">
+                    <select id="selectAcaoHome"></select>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button type="button" onclick="carregarAcaoDaHome(false)" style="font-size: 0.85rem; padding: 0.65rem;">
+                        Revisar Dados
+                    </button>
+                    <button type="button" class="success-btn" onclick="carregarAcaoDaHome(true)" style="font-size: 0.85rem; padding: 0.65rem;">
+                        Calcular Direto
+                    </button>
+                </div>
+            </div>
+
+            <div class="btn-container">
+                <button onclick="goToScreen(2)">Iniciar Análise Manual</button>
+                <button onclick="fillTestCase()" class="secondary" style="font-size: 0.8rem;">Caso de Teste</button>
+            </div>
+        </div>
+
+        <!-- TELA 2: DADOS FINANCEIROS E BALANÇO -->
+        <div id="screen2" class="step-section">
+            <h2>1. Dados Operacionais e Balanço</h2>
+
+            <div class="card preset-card">
+                <h3>Selecionar Ação do Ibovespa (20 principais — Sem Token)</h3>
+                <div class="form-group" style="margin-bottom: 0.35rem;">
+                    <select id="selectAcaoTela2" onchange="carregarAcaoPreset(this.value, false)"></select>
+                </div>
+                <div id="chipsContainer" class="chips-grid"></div>
+            </div>
+
+            <div class="card api-card">
+                <h3>Buscar / Atualizar Cotação Online (Sem Token)</h3>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Ticker B3 (ex.: PETR4, VALE3, WEGE3, BBAS3)</label>
+                    <div class="api-row">
+                        <input type="text" id="apiTicker" placeholder="PETR4" autocapitalize="characters">
+                        <button type="button" id="btnApi" onclick="buscarDadosAPI()">Buscar</button>
+                    </div>
+                </div>
+                <details class="token-box">
+                    <summary>Token brapi.dev (opcional — não necessário para as 20 ações)</summary>
+                    <div class="token-inner">
+                        <input type="password" id="apiToken" placeholder="Cole seu token apenas se quiser puxar DRE/Balanço extra via brapi">
+                    </div>
+                </details>
+                <div id="apiStatus" class="api-status"></div>
+            </div>
+
+            <div class="form-group"><label>Receita Líquida (R$)</label><input type="number" id="receita" step="0.01" value="10000000"></div>
+            <div class="form-group"><label>EBIT (R$)</label><input type="number" id="ebit" step="0.01" value="2000000"></div>
+            <div class="form-group"><label>Alíquota de IR (%)</label><input type="number" id="aliqIr" step="0.01" value="34"></div>
+            <div class="form-group"><label>Depreciação + Amortização (R$)</label><input type="number" id="depr" step="0.01" value="300000"></div>
+            <div class="form-group"><label>CAPEX (R$)</label><input type="number" id="capex" step="0.01" value="450000"></div>
+            <div class="form-group"><label>Variação do Capital de Giro (R$)</label><input type="number" id="varWc" step="0.01" value="100000"></div>
+            <div class="form-group"><label>Lucro Líquido (R$)</label><input type="number" id="lucroLiq" step="0.01" value="1100000"></div>
+            <div class="form-group"><label>Patrimônio Líquido - PL (R$)</label><input type="number" id="patrimonioLiq" step="0.01" value="8000000"></div>
+            <div class="form-group"><label>Dívida Bruta CP - Curto Prazo (R$)</label><input type="number" id="dividaCp" step="0.01" value="500000"></div>
+            <div class="form-group"><label>Dívida Bruta LP - Longo Prazo (R$)</label><input type="number" id="dividaLp" step="0.01" value="2500000"></div>
+            <div class="form-group"><label>Caixa e Equivalentes (R$)</label><input type="number" id="caixa" step="0.01" value="500000"></div>
+            <div class="form-group"><label>Novas Dívidas (R$)</label><input type="number" id="novasDiv" step="0.01" value="200000"></div>
+            <div class="form-group"><label>Amortização das Dívidas (R$)</label><input type="number" id="amortDiv" step="0.01" value="150000"></div>
+            <div class="form-group"><label>Dividendos Totais Distribuídos (R$)</label><input type="number" id="dividendos" step="0.01" value="400000"></div>
+
+            <div class="btn-container">
+                <button class="secondary" onclick="goToScreen(1)">Voltar</button>
+                <button onclick="goToScreen(3)">Próximo: Premissas</button>
+            </div>
+        </div>
+
+        <!-- TELA 3: PREMISSAS DE VALUATION E MERCADO -->
+        <div id="screen3" class="step-section">
+            <h2>2. Premissas de Valuation e Mercado</h2>
+            <div class="form-group"><label>Horizonte do Período Explícito (anos - n)</label><input type="number" id="horizonte" step="1" value="5"></div>
+            <div class="form-group"><label>Crescimento no Período Explícito (ge - %)</label><input type="number" id="gExplicito" step="0.01" value="8"></div>
+            <div class="form-group"><label>Crescimento na Perpetuidade (g - %)</label><input type="number" id="gPerp" step="0.01" value="3"></div>
+            <div class="form-group"><label>WACC (%)</label><input type="number" id="wacc" step="0.01" value="12"></div>
+            <div class="form-group"><label>Custo do Capital Próprio - Ke (%)</label><input type="number" id="ke" step="0.01" value="14"></div>
+            <div class="form-group"><label>Número de Ações</label><input type="number" id="numAcoes" step="1" value="1000000"></div>
+            <div class="form-group"><label>Preço Atual da Ação (R$ - Mercado)</label><input type="number" id="precoAtual" step="0.01" value="9.00"></div>
+
+            <div class="btn-container">
+                <button class="secondary" onclick="goToScreen(2)">Voltar</button>
+                <button onclick="calcularValuation()">Calcular Tudo</button>
+            </div>
+        </div>
+
+        <!-- TELA 4: FLUXOS PREVISTOS -->
+        <div id="screen4" class="step-section">
+            <h2>3. Tabela de Fluxos Previstos</h2>
+            <div class="nav-tabs">
+                <div class="nav-tab active" id="tabFcff" onclick="switchTab('fcff')">Ótica FCFF</div>
+                <div class="nav-tab" id="tabFcfe" onclick="switchTab('fcfe')">Ótica FCFE</div>
+            </div>
+            
+            <div id="containerTabelaFcff"></div>
+            <div id="containerTabelaFcfe" style="display:none;"></div>
+
+            <div class="btn-container">
+                <button class="secondary" onclick="goToScreen(3)">Editar Premissas</button>
+                <button onclick="goToScreen(5)">Ver Resultados & Múltiplos</button>
+            </div>
+        </div>
+
+        <!-- TELA 5: RESULTADOS E MÚLTIPLOS COM ABAS -->
+        <div id="screen5" class="step-section">
+            <h2>4. Resultados Finais</h2>
+            
+            <!-- Abas da Tela Final -->
+            <div class="nav-tabs">
+                <div class="nav-tab active" id="tabResValuation" onclick="switchResTab('valuation')">Valuation (FCD)</div>
+                <div class="nav-tab" id="tabResMultiplos" onclick="switchResTab('multiplos')">Indicadores & Múltiplos</div>
+            </div>
+
+            <!-- SEÇÃO 1: VALUATION -->
+            <div id="containerValuation">
+                <div class="card">
+                    <h3>Ótica da Firma (FCFF)</h3>
+                    <div class="result-row"><span>Valor Explícito:</span><span id="resFcffExplícito">R$ 0,00</span></div>
+                    <div class="result-row"><span>Valor Residual (VRn):</span><span id="resFcffVr">R$ 0,00</span></div>
+                    <div class="result-row"><span>Valor da Firma (EV):</span><span id="resValorFirma">R$ 0,00</span></div>
+                    <div class="result-row"><span>(-) Dívida Líquida:</span><span id="resDividaLiq">R$ 0,00</span></div>
+                    <div class="result-row" style="border-top:1px solid #ddd; padding-top:4px; margin-top:4px;"><span>Valor Justo Patrimônio:</span><span id="resPatrimonioFcff">R$ 0,00</span></div>
+                    <div class="result-row" style="font-weight:bold; color:var(--primary);"><span>Valor Justo por Ação:</span><span id="resAcaoFcff">R$ 0,00</span></div>
+                    <div class="result-row"><span>Potencial vs. Preço:</span><span id="resPotencialFcff">0%</span></div>
+                </div>
+
+                <div class="card">
+                    <h3>Ótica do Acionista (FCFE)</h3>
+                    <div class="result-row"><span>Valor Explícito:</span><span id="resFcfeExplícito">R$ 0,00</span></div>
+                    <div class="result-row"><span>Valor Residual (VRn):</span><span id="resFcfeVr">R$ 0,00</span></div>
+                    <div class="result-row" style="border-top:1px solid #ddd; padding-top:4px; margin-top:4px; font-weight:bold; color:var(--primary);"><span>Valor Justo Patrimônio:</span><span id="resPatrimonioFcfe">R$ 0,00</span></div>
+                    <div class="result-row" style="font-weight:bold; color:var(--primary);"><span>Valor Justo por Ação:</span><span id="resAcaoFcfe">R$ 0,00</span></div>
+                    <div class="result-row"><span>Potencial vs. Preço:</span><span id="resPotencialFcfe">0%</span></div>
+                </div>
+            </div>
+
+            <!-- SEÇÃO 2: INDICADORES E MÚLTIPLOS -->
+            <div id="containerMultiplos" style="display: none;">
+                <div class="card">
+                    <h3>Indicadores por Ação & Balanço</h3>
+                    <div class="result-row"><span>LPA (Lucro por Ação):</span><span id="indLpa">R$ 0,00</span></div>
+                    <div class="result-row"><span>VPA (Valor Patrimonial/Ação):</span><span id="indVpa">R$ 0,00</span></div>
+                    <div class="result-row"><span>RPA (Receita por Ação):</span><span id="indRpa">R$ 0,00</span></div>
+                    <div class="result-row"><span>DPA (Dividendo por Ação):</span><span id="indDpa">R$ 0,00</span></div>
+                    <div class="result-row"><span>EBITDA:</span><span id="indEbitda">R$ 0,00</span></div>
+                    <div class="result-row"><span>Dívida Bruta Total:</span><span id="indDividaBruta">R$ 0,00</span></div>
+                    <div class="result-row"><span>Dívida Líquida:</span><span id="indDividaLiqInd">R$ 0,00</span></div>
+                    <div class="result-row"><span>Valor de Mercado (Preço Atual):</span><span id="indValMercado">R$ 0,00</span></div>
+                </div>
+
+                <div class="card">
+                    <h3>Múltiplos (Base Preço Atual de Mercado)</h3>
+                    <div class="result-row"><span>P/L (Preço/Lucro):</span><span id="mulPlMercado">0,00 x</span></div>
+                    <div class="result-row"><span>Earnings Yield (Rendimento Lucro):</span><span id="mulEyMercado">0%</span></div>
+                    <div class="result-row"><span>P/VP (Preço/Valor Patrimonial):</span><span id="mulPvpMercado">0,00 x</span></div>
+                    <div class="result-row"><span>PSR (Preço/Receita):</span><span id="mulPsrMercado">0,00 x</span></div>
+                    <div class="result-row"><span>EV / EBITDA:</span><span id="mulEvEbitdaMercado">0,00 x</span></div>
+                    <div class="result-row"><span>Payout:</span><span id="mulPayout">0%</span></div>
+                </div>
+
+                <div class="card">
+                    <h3>Múltiplos (Base Valor Justo FCFF)</h3>
+                    <div class="result-row"><span>P/L Justo:</span><span id="mulPlJusto">0,00 x</span></div>
+                    <div class="result-row"><span>P/VP Justo:</span><span id="mulPvpJusto">0,00 x</span></div>
+                    <div class="result-row"><span>EV / EBITDA Justo:</span><span id="mulEvEbitdaJusto">0,00 x</span></div>
+                </div>
+            </div>
+
+            <div class="btn-container">
+                <button class="secondary" onclick="goToScreen(4)">Ver Tabela de Fluxos</button>
+                <button onclick="goToScreen(1)">Início</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // ===== BASE DE DADOS: 20 PRINCIPAIS AÇÕES DO IBOVESPA (FUNCIONA 100% SEM TOKEN) =====
+    const ACOES_IBOV = [
+    {
+        "ticker": "PETR4",
+        "nome": "Petrobras PN",
+        "setor": "Petróleo, Gás e Biocombustíveis",
+        "receita": 495000000000,
+        "ebit": 195000000000,
+        "aliqIr": 31.0,
+        "depr": 68000000000,
+        "capex": 78000000000,
+        "varWc": 4500000000,
+        "lucroLiq": 115000000000,
+        "patrimonioLiq": 410000000000,
+        "dividaCp": 52000000000,
+        "dividaLp": 248000000000,
+        "caixa": 68000000000,
+        "novasDiv": 38000000000,
+        "amortDiv": 42000000000,
+        "dividendos": 65000000000,
+        "horizonte": 5,
+        "gExplicito": 4.5,
+        "gPerp": 3.0,
+        "wacc": 13.5,
+        "ke": 15.5,
+        "numAcoes": 13044496930,
+        "precoAtual": 41.9
+    },
+    {
+        "ticker": "VALE3",
+        "nome": "Vale ON",
+        "setor": "Mineração e Siderurgia",
+        "receita": 212000000000,
+        "ebit": 72000000000,
+        "aliqIr": 24.0,
+        "depr": 17500000000,
+        "capex": 31000000000,
+        "varWc": 2200000000,
+        "lucroLiq": 44500000000,
+        "patrimonioLiq": 205000000000,
+        "dividaCp": 11000000000,
+        "dividaLp": 78000000000,
+        "caixa": 32000000000,
+        "novasDiv": 14000000000,
+        "amortDiv": 12000000000,
+        "dividendos": 24000000000,
+        "horizonte": 5,
+        "gExplicito": 5.0,
+        "gPerp": 3.0,
+        "wacc": 12.8,
+        "ke": 14.8,
+        "numAcoes": 4539007580,
+        "precoAtual": 58.88
+    },
+    {
+        "ticker": "ITUB4",
+        "nome": "Itaú Unibanco PN",
+        "setor": "Bancos",
+        "receita": 172000000000,
+        "ebit": 54000000000,
+        "aliqIr": 26.0,
+        "depr": 6200000000,
+        "capex": 5800000000,
+        "varWc": 2500000000,
+        "lucroLiq": 42500000000,
+        "patrimonioLiq": 198000000000,
+        "dividaCp": 22000000000,
+        "dividaLp": 68000000000,
+        "caixa": 75000000000,
+        "novasDiv": 12000000000,
+        "amortDiv": 10000000000,
+        "dividendos": 25500000000,
+        "horizonte": 5,
+        "gExplicito": 7.5,
+        "gPerp": 3.5,
+        "wacc": 12.2,
+        "ke": 13.8,
+        "numAcoes": 9804135348,
+        "precoAtual": 39.93
+    },
+    {
+        "ticker": "AXIA3",
+        "nome": "Axia Energia ON (ex-Eletrobras)",
+        "setor": "Energia Elétrica",
+        "receita": 41500000000,
+        "ebit": 17800000000,
+        "aliqIr": 25.0,
+        "depr": 4800000000,
+        "capex": 7200000000,
+        "varWc": 600000000,
+        "lucroLiq": 10800000000,
+        "patrimonioLiq": 116000000000,
+        "dividaCp": 11500000000,
+        "dividaLp": 56500000000,
+        "caixa": 24000000000,
+        "novasDiv": 8500000000,
+        "amortDiv": 7800000000,
+        "dividendos": 4500000000,
+        "horizonte": 5,
+        "gExplicito": 6.5,
+        "gPerp": 3.2,
+        "wacc": 11.2,
+        "ke": 13.4,
+        "numAcoes": 2307099812,
+        "precoAtual": 46.04
+    },
+    {
+        "ticker": "BBDC4",
+        "nome": "Bradesco PN",
+        "setor": "Bancos",
+        "receita": 134000000000,
+        "ebit": 26500000000,
+        "aliqIr": 24.0,
+        "depr": 5400000000,
+        "capex": 5100000000,
+        "varWc": 1800000000,
+        "lucroLiq": 21200000000,
+        "patrimonioLiq": 166000000000,
+        "dividaCp": 18000000000,
+        "dividaLp": 52000000000,
+        "caixa": 58000000000,
+        "novasDiv": 9000000000,
+        "amortDiv": 8200000000,
+        "dividendos": 11800000000,
+        "horizonte": 5,
+        "gExplicito": 8.0,
+        "gPerp": 3.5,
+        "wacc": 12.6,
+        "ke": 14.4,
+        "numAcoes": 10615423000,
+        "precoAtual": 15.85
+    },
+    {
+        "ticker": "B3SA3",
+        "nome": "B3 ON",
+        "setor": "Serviços Financeiros",
+        "receita": 10600000000,
+        "ebit": 6400000000,
+        "aliqIr": 28.0,
+        "depr": 1150000000,
+        "capex": 480000000,
+        "varWc": 150000000,
+        "lucroLiq": 4850000000,
+        "patrimonioLiq": 19500000000,
+        "dividaCp": 2400000000,
+        "dividaLp": 11200000000,
+        "caixa": 11800000000,
+        "novasDiv": 2000000000,
+        "amortDiv": 1800000000,
+        "dividendos": 3600000000,
+        "horizonte": 5,
+        "gExplicito": 7.5,
+        "gPerp": 3.5,
+        "wacc": 11.8,
+        "ke": 13.5,
+        "numAcoes": 5560000000,
+        "precoAtual": 12.71
+    },
+    {
+        "ticker": "ABEV3",
+        "nome": "Ambev ON",
+        "setor": "Consumo Não Cíclico / Bebidas",
+        "receita": 84500000000,
+        "ebit": 19800000000,
+        "aliqIr": 22.0,
+        "depr": 6100000000,
+        "capex": 5400000000,
+        "varWc": 850000000,
+        "lucroLiq": 15200000000,
+        "patrimonioLiq": 89000000000,
+        "dividaCp": 1400000000,
+        "dividaLp": 2600000000,
+        "caixa": 18500000000,
+        "novasDiv": 900000000,
+        "amortDiv": 850000000,
+        "dividendos": 12200000000,
+        "horizonte": 5,
+        "gExplicito": 6.0,
+        "gPerp": 3.2,
+        "wacc": 11.4,
+        "ke": 12.8,
+        "numAcoes": 15757657336,
+        "precoAtual": 14.9
+    },
+    {
+        "ticker": "BPAC11",
+        "nome": "BTG Pactual UNT",
+        "setor": "Bancos e Investimentos",
+        "receita": 25800000000,
+        "ebit": 15600000000,
+        "aliqIr": 23.0,
+        "depr": 950000000,
+        "capex": 850000000,
+        "varWc": 700000000,
+        "lucroLiq": 12800000000,
+        "patrimonioLiq": 56000000000,
+        "dividaCp": 9500000000,
+        "dividaLp": 24000000000,
+        "caixa": 28000000000,
+        "novasDiv": 4500000000,
+        "amortDiv": 3800000000,
+        "dividendos": 4200000000,
+        "horizonte": 5,
+        "gExplicito": 10.5,
+        "gPerp": 3.8,
+        "wacc": 12.5,
+        "ke": 14.2,
+        "numAcoes": 3826000000,
+        "precoAtual": 49.23
+    },
+    {
+        "ticker": "WEGE3",
+        "nome": "WEG ON",
+        "setor": "Bens Industriais",
+        "receita": 39200000000,
+        "ebit": 8400000000,
+        "aliqIr": 22.0,
+        "depr": 820000000,
+        "capex": 2100000000,
+        "varWc": 650000000,
+        "lucroLiq": 6450000000,
+        "patrimonioLiq": 20200000000,
+        "dividaCp": 1600000000,
+        "dividaLp": 1900000000,
+        "caixa": 6800000000,
+        "novasDiv": 700000000,
+        "amortDiv": 600000000,
+        "dividendos": 3300000000,
+        "horizonte": 5,
+        "gExplicito": 12.0,
+        "gPerp": 4.0,
+        "wacc": 11.2,
+        "ke": 12.4,
+        "numAcoes": 4197317998,
+        "precoAtual": 50.11
+    },
+    {
+        "ticker": "ITSA4",
+        "nome": "Itaúsa PN",
+        "setor": "Holding Financeira",
+        "receita": 9200000000,
+        "ebit": 15400000000,
+        "aliqIr": 12.0,
+        "depr": 320000000,
+        "capex": 280000000,
+        "varWc": 150000000,
+        "lucroLiq": 14600000000,
+        "patrimonioLiq": 88500000000,
+        "dividaCp": 1200000000,
+        "dividaLp": 6800000000,
+        "caixa": 4200000000,
+        "novasDiv": 900000000,
+        "amortDiv": 1100000000,
+        "dividendos": 8900000000,
+        "horizonte": 5,
+        "gExplicito": 7.0,
+        "gPerp": 3.5,
+        "wacc": 12.0,
+        "ke": 13.2,
+        "numAcoes": 10328144920,
+        "precoAtual": 13.14
+    },
+    {
+        "ticker": "BBAS3",
+        "nome": "Banco do Brasil ON",
+        "setor": "Bancos",
+        "receita": 158000000000,
+        "ebit": 34000000000,
+        "aliqIr": 22.0,
+        "depr": 4800000000,
+        "capex": 4400000000,
+        "varWc": 2100000000,
+        "lucroLiq": 28500000000,
+        "patrimonioLiq": 182000000000,
+        "dividaCp": 19000000000,
+        "dividaLp": 55000000000,
+        "caixa": 64000000000,
+        "novasDiv": 9500000000,
+        "amortDiv": 8800000000,
+        "dividendos": 11400000000,
+        "horizonte": 5,
+        "gExplicito": 6.5,
+        "gPerp": 3.0,
+        "wacc": 13.2,
+        "ke": 15.2,
+        "numAcoes": 5708360000,
+        "precoAtual": 24.8
+    },
+    {
+        "ticker": "VIVT3",
+        "nome": "Telefônica Brasil (Vivo) ON",
+        "setor": "Telecomunicações",
+        "receita": 56800000000,
+        "ebit": 10200000000,
+        "aliqIr": 24.0,
+        "depr": 13200000000,
+        "capex": 9100000000,
+        "varWc": 450000000,
+        "lucroLiq": 5850000000,
+        "patrimonioLiq": 70200000000,
+        "dividaCp": 4800000000,
+        "dividaLp": 13500000000,
+        "caixa": 6400000000,
+        "novasDiv": 2600000000,
+        "amortDiv": 2400000000,
+        "dividendos": 5100000000,
+        "horizonte": 5,
+        "gExplicito": 5.5,
+        "gPerp": 3.0,
+        "wacc": 11.0,
+        "ke": 12.6,
+        "numAcoes": 3251000000,
+        "precoAtual": 34.85
+    },
+    {
+        "ticker": "SBSP3",
+        "nome": "Sabesp ON",
+        "setor": "Utilidade Pública / Saneamento",
+        "receita": 27600000000,
+        "ebit": 8900000000,
+        "aliqIr": 27.0,
+        "depr": 2950000000,
+        "capex": 5800000000,
+        "varWc": 320000000,
+        "lucroLiq": 5600000000,
+        "patrimonioLiq": 39500000000,
+        "dividaCp": 3600000000,
+        "dividaLp": 19400000000,
+        "caixa": 5200000000,
+        "novasDiv": 4200000000,
+        "amortDiv": 2900000000,
+        "dividendos": 1650000000,
+        "horizonte": 5,
+        "gExplicito": 8.5,
+        "gPerp": 3.5,
+        "wacc": 10.6,
+        "ke": 12.4,
+        "numAcoes": 683509869,
+        "precoAtual": 112.4
+    },
+    {
+        "ticker": "SUZB3",
+        "nome": "Suzano ON",
+        "setor": "Papel e Celulose",
+        "receita": 48200000000,
+        "ebit": 15400000000,
+        "aliqIr": 24.0,
+        "depr": 8400000000,
+        "capex": 11200000000,
+        "varWc": 950000000,
+        "lucroLiq": 7900000000,
+        "patrimonioLiq": 47500000000,
+        "dividaCp": 8200000000,
+        "dividaLp": 84500000000,
+        "caixa": 19800000000,
+        "novasDiv": 11000000000,
+        "amortDiv": 9800000000,
+        "dividendos": 2200000000,
+        "horizonte": 5,
+        "gExplicito": 6.0,
+        "gPerp": 3.0,
+        "wacc": 11.6,
+        "ke": 13.8,
+        "numAcoes": 1264117615,
+        "precoAtual": 58.4
+    },
+    {
+        "ticker": "RDOR3",
+        "nome": "Rede D'Or ON",
+        "setor": "Saúde",
+        "receita": 53400000000,
+        "ebit": 7600000000,
+        "aliqIr": 25.0,
+        "depr": 2100000000,
+        "capex": 3400000000,
+        "varWc": 520000000,
+        "lucroLiq": 4150000000,
+        "patrimonioLiq": 25400000000,
+        "dividaCp": 4900000000,
+        "dividaLp": 34200000000,
+        "caixa": 16500000000,
+        "novasDiv": 5200000000,
+        "amortDiv": 4500000000,
+        "dividendos": 1450000000,
+        "horizonte": 5,
+        "gExplicito": 9.5,
+        "gPerp": 3.6,
+        "wacc": 11.5,
+        "ke": 13.5,
+        "numAcoes": 2270000000,
+        "precoAtual": 32.8
+    },
+    {
+        "ticker": "EQTL3",
+        "nome": "Equatorial Energia ON",
+        "setor": "Energia Elétrica",
+        "receita": 45600000000,
+        "ebit": 9800000000,
+        "aliqIr": 24.0,
+        "depr": 2650000000,
+        "capex": 5900000000,
+        "varWc": 480000000,
+        "lucroLiq": 3950000000,
+        "patrimonioLiq": 26800000000,
+        "dividaCp": 7400000000,
+        "dividaLp": 44200000000,
+        "caixa": 12400000000,
+        "novasDiv": 8200000000,
+        "amortDiv": 6500000000,
+        "dividendos": 1100000000,
+        "horizonte": 5,
+        "gExplicito": 8.2,
+        "gPerp": 3.4,
+        "wacc": 10.8,
+        "ke": 12.9,
+        "numAcoes": 1248000000,
+        "precoAtual": 34.6
+    },
+    {
+        "ticker": "PRIO3",
+        "nome": "PRIO ON",
+        "setor": "Petróleo e Gás",
+        "receita": 15800000000,
+        "ebit": 8600000000,
+        "aliqIr": 24.0,
+        "depr": 2450000000,
+        "capex": 3600000000,
+        "varWc": 380000000,
+        "lucroLiq": 5650000000,
+        "patrimonioLiq": 22800000000,
+        "dividaCp": 2900000000,
+        "dividaLp": 16800000000,
+        "caixa": 5400000000,
+        "novasDiv": 3200000000,
+        "amortDiv": 2600000000,
+        "dividendos": 600000000,
+        "horizonte": 5,
+        "gExplicito": 9.0,
+        "gPerp": 3.0,
+        "wacc": 12.6,
+        "ke": 14.6,
+        "numAcoes": 892000000,
+        "precoAtual": 44.2
+    },
+    {
+        "ticker": "EMBJ3",
+        "nome": "Embraer ON",
+        "setor": "Bens Industriais / Aviação",
+        "receita": 37400000000,
+        "ebit": 3450000000,
+        "aliqIr": 22.0,
+        "depr": 1350000000,
+        "capex": 1750000000,
+        "varWc": 420000000,
+        "lucroLiq": 2150000000,
+        "patrimonioLiq": 16400000000,
+        "dividaCp": 2100000000,
+        "dividaLp": 13200000000,
+        "caixa": 9600000000,
+        "novasDiv": 2400000000,
+        "amortDiv": 2200000000,
+        "dividendos": 540000000,
+        "horizonte": 5,
+        "gExplicito": 11.0,
+        "gPerp": 3.8,
+        "wacc": 11.6,
+        "ke": 13.4,
+        "numAcoes": 734632000,
+        "precoAtual": 56.8
+    },
+    {
+        "ticker": "BBSE3",
+        "nome": "BB Seguridade ON",
+        "setor": "Seguros e Previdência",
+        "receita": 11200000000,
+        "ebit": 9600000000,
+        "aliqIr": 16.0,
+        "depr": 180000000,
+        "capex": 140000000,
+        "varWc": 90000000,
+        "lucroLiq": 8150000000,
+        "patrimonioLiq": 12400000000,
+        "dividaCp": 150000000,
+        "dividaLp": 350000000,
+        "caixa": 3800000000,
+        "novasDiv": 100000000,
+        "amortDiv": 120000000,
+        "dividendos": 7200000000,
+        "horizonte": 5,
+        "gExplicito": 6.5,
+        "gPerp": 3.2,
+        "wacc": 11.5,
+        "ke": 12.6,
+        "numAcoes": 1941000000,
+        "precoAtual": 36.9
+    },
+    {
+        "ticker": "RENT3",
+        "nome": "Localiza ON",
+        "setor": "Consumo Cíclico / Locação",
+        "receita": 38900000000,
+        "ebit": 8100000000,
+        "aliqIr": 24.0,
+        "depr": 3600000000,
+        "capex": 5200000000,
+        "varWc": 650000000,
+        "lucroLiq": 3450000000,
+        "patrimonioLiq": 26900000000,
+        "dividaCp": 6800000000,
+        "dividaLp": 33400000000,
+        "caixa": 9800000000,
+        "novasDiv": 7500000000,
+        "amortDiv": 6200000000,
+        "dividendos": 1450000000,
+        "horizonte": 5,
+        "gExplicito": 9.0,
+        "gPerp": 3.5,
+        "wacc": 11.8,
+        "ke": 13.9,
+        "numAcoes": 1082000000,
+        "precoAtual": 41.5
+    }
+];
+    const BRAPI_FREE_TICKERS = ['PETR4', 'VALE3', 'ITUB4', 'MGLU3'];
+
+    let acaoAtiva = null;
+
+    function inicializarSeletorAcoes() {
+        const selHome = document.getElementById('selectAcaoHome');
+        const selTela2 = document.getElementById('selectAcaoTela2');
+        const chipsContainer = document.getElementById('chipsContainer');
+
+        selTela2.innerHTML = '<option value="">-- Escolha uma ação do Ibovespa --</option>';
+        selHome.innerHTML = '';
+
+        ACOES_IBOV.forEach(acao => {
+            const label = `${acao.ticker} — ${acao.nome} (${acao.setor})`;
+
+            const optHome = document.createElement('option');
+            optHome.value = acao.ticker;
+            optHome.textContent = label;
+            selHome.appendChild(optHome);
+
+            const optTela2 = document.createElement('option');
+            optTela2.value = acao.ticker;
+            optTela2.textContent = label;
+            selTela2.appendChild(optTela2);
+
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = 'ticker-chip';
+            chip.id = 'chip-' + acao.ticker;
+            chip.textContent = acao.ticker;
+            chip.title = `${acao.nome} — ${acao.setor}`;
+            chip.onclick = () => carregarAcaoPreset(acao.ticker, false);
+            chipsContainer.appendChild(chip);
+        });
+    }
+
+    function atualizarBadgeAtivo(texto) {
+        const badge = document.getElementById('activeStockBadge');
+        if (!texto) {
+            badge.style.display = 'none';
+            badge.innerText = '';
+            return;
+        }
+        badge.innerText = 'Ativo em análise: ' + texto;
+        const currentScreen = document.querySelector('.step-section.active');
+        badge.style.display = (currentScreen && currentScreen.id !== 'screen1') ? 'block' : 'none';
+    }
+
+    function carregarAcaoPreset(ticker, navegarParaTela2 = false, exibirStatus = true) {
+        if (!ticker) return null;
+        const acao = ACOES_IBOV.find(item => item.ticker === ticker.toUpperCase());
+        if (!acao) return null;
+
+        acaoAtiva = acao;
+
+        document.getElementById('receita').value = acao.receita;
+        document.getElementById('ebit').value = acao.ebit;
+        document.getElementById('aliqIr').value = acao.aliqIr;
+        document.getElementById('depr').value = acao.depr;
+        document.getElementById('capex').value = acao.capex;
+        document.getElementById('varWc').value = acao.varWc;
+        document.getElementById('lucroLiq').value = acao.lucroLiq;
+        document.getElementById('patrimonioLiq').value = acao.patrimonioLiq;
+        document.getElementById('dividaCp').value = acao.dividaCp;
+        document.getElementById('dividaLp').value = acao.dividaLp;
+        document.getElementById('caixa').value = acao.caixa;
+        document.getElementById('novasDiv').value = acao.novasDiv;
+        document.getElementById('amortDiv').value = acao.amortDiv;
+        document.getElementById('dividendos').value = acao.dividendos;
+
+        document.getElementById('horizonte').value = acao.horizonte;
+        document.getElementById('gExplicito').value = acao.gExplicito;
+        document.getElementById('gPerp').value = acao.gPerp;
+        document.getElementById('wacc').value = acao.wacc;
+        document.getElementById('ke').value = acao.ke;
+        document.getElementById('numAcoes').value = acao.numAcoes;
+        document.getElementById('precoAtual').value = acao.precoAtual;
+
+        // Sincroniza campo de busca e seletores
+        document.getElementById('apiTicker').value = acao.ticker;
+        document.getElementById('selectAcaoHome').value = acao.ticker;
+        document.getElementById('selectAcaoTela2').value = acao.ticker;
+
+        document.querySelectorAll('.ticker-chip').forEach(el => el.classList.remove('selected'));
+        const chipEl = document.getElementById('chip-' + acao.ticker);
+        if (chipEl) chipEl.classList.add('selected');
+
+        const tituloAtivo = `${acao.ticker} — ${acao.nome} (${acao.setor})`;
+        atualizarBadgeAtivo(tituloAtivo);
+        if (exibirStatus) {
+            statusAPI(`✓ Dados completos carregados para ${tituloAtivo} (sem necessidade de token).`, 'ok');
+        }
+
+        if (navegarParaTela2) {
+            goToScreen(2);
+        }
+        return acao;
+    }
+
+    function carregarAcaoDaHome(calcularDireto = false) {
+        const ticker = document.getElementById('selectAcaoHome').value;
+        carregarAcaoPreset(ticker, true);
+        if (calcularDireto) {
+            calcularValuation();
+        }
+    }
+
+    function goToScreen(screenNumber) {
+        document.querySelectorAll('.step-section').forEach(el => el.classList.remove('active'));
+        document.getElementById('screen' + screenNumber).classList.add('active');
+        const badge = document.getElementById('activeStockBadge');
+        if (badge.innerText && screenNumber !== 1) {
+            badge.style.display = 'block';
+        } else {
+            badge.style.display = 'none';
+        }
+        window.scrollTo(0, 0);
+    }
+
+    function fillTestCase() {
+        acaoAtiva = null;
+        document.querySelectorAll('.ticker-chip').forEach(el => el.classList.remove('selected'));
+        document.getElementById('selectAcaoTela2').value = '';
+        document.getElementById('apiTicker').value = '';
+        document.getElementById('apiStatus').style.display = 'none';
+        atualizarBadgeAtivo('Caso de Teste Padrão');
+
+        document.getElementById('receita').value = 10000000;
+        document.getElementById('ebit').value = 2000000;
+        document.getElementById('aliqIr').value = 34;
+        document.getElementById('depr').value = 300000;
+        document.getElementById('capex').value = 450000;
+        document.getElementById('varWc').value = 100000;
+        document.getElementById('lucroLiq').value = 1100000;
+        document.getElementById('patrimonioLiq').value = 8000000;
+        document.getElementById('dividaCp').value = 500000;
+        document.getElementById('dividaLp').value = 2500000;
+        document.getElementById('caixa').value = 500000;
+        document.getElementById('novasDiv').value = 200000;
+        document.getElementById('amortDiv').value = 150000;
+        document.getElementById('dividendos').value = 400000;
+
+        document.getElementById('horizonte').value = 5;
+        document.getElementById('gExplicito').value = 8;
+        document.getElementById('gPerp').value = 3;
+        document.getElementById('wacc').value = 12;
+        document.getElementById('ke').value = 14;
+        document.getElementById('numAcoes').value = 1000000;
+        document.getElementById('precoAtual').value = 9.00;
+        
+        alert("Caso de teste carregado com sucesso!");
+        goToScreen(2);
+    }
+
+    function formatBRL(value) {
+        return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function switchTab(type) {
+        if(type === 'fcff') {
+            document.getElementById('tabFcff').classList.add('active');
+            document.getElementById('tabFcfe').classList.remove('active');
+            document.getElementById('containerTabelaFcff').style.display = 'block';
+            document.getElementById('containerTabelaFcfe').style.display = 'none';
+        } else {
+            document.getElementById('tabFcfe').classList.add('active');
+            document.getElementById('tabFcff').classList.remove('active');
+            document.getElementById('containerTabelaFcfe').style.display = 'block';
+            document.getElementById('containerTabelaFcff').style.display = 'none';
+        }
+    }
+
+    function switchResTab(type) {
+        if(type === 'valuation') {
+            document.getElementById('tabResValuation').classList.add('active');
+            document.getElementById('tabResMultiplos').classList.remove('active');
+            document.getElementById('containerValuation').style.display = 'block';
+            document.getElementById('containerMultiplos').style.display = 'none';
+        } else {
+            document.getElementById('tabResMultiplos').classList.add('active');
+            document.getElementById('tabResValuation').classList.remove('active');
+            document.getElementById('containerMultiplos').style.display = 'block';
+            document.getElementById('containerValuation').style.display = 'none';
+        }
+    }
+
+    function mostrarErro(mensagem) {
+        const alerta = document.getElementById('errorAlert');
+        alerta.innerText = mensagem;
+        alerta.style.display = 'block';
+        setTimeout(() => { alerta.style.display = 'none'; }, 6000);
+    }
+
+    function calcularValuation() {
+        // Inputs Operacionais e Balanço
+        const receita = parseFloat(document.getElementById('receita').value) || 0;
+        const ebit = parseFloat(document.getElementById('ebit').value) || 0;
+        const aliqIr = (parseFloat(document.getElementById('aliqIr').value) || 0) / 100;
+        const depr = parseFloat(document.getElementById('depr').value) || 0;
+        const capex = parseFloat(document.getElementById('capex').value) || 0;
+        const varWc = parseFloat(document.getElementById('varWc').value) || 0;
+        const lucroLiq = parseFloat(document.getElementById('lucroLiq').value) || 0;
+        const patrimonioLiq = parseFloat(document.getElementById('patrimonioLiq').value) || 0;
+        const dividaCp = parseFloat(document.getElementById('dividaCp').value) || 0;
+        const dividaLp = parseFloat(document.getElementById('dividaLp').value) || 0;
+        const caixa = parseFloat(document.getElementById('caixa').value) || 0;
+        const novasDiv = parseFloat(document.getElementById('novasDiv').value) || 0;
+        const amortDiv = parseFloat(document.getElementById('amortDiv').value) || 0;
+        const dividendos = parseFloat(document.getElementById('dividendos').value) || 0;
+
+        // Premissas
+        const n = parseInt(document.getElementById('horizonte').value) || 0;
+        const ge = (parseFloat(document.getElementById('gExplicito').value) || 0) / 100;
+        const g = (parseFloat(document.getElementById('gPerp').value) || 0) / 100;
+        const wacc = (parseFloat(document.getElementById('wacc').value) || 0) / 100;
+        const ke = (parseFloat(document.getElementById('ke').value) || 0) / 100;
+        const numAcoes = parseFloat(document.getElementById('numAcoes').value) || 1;
+        const precoAtual = parseFloat(document.getElementById('precoAtual').value) || 0;
+
+        if (wacc <= g || ke <= g) {
+            mostrarErro("Erro: WACC e Ke devem ser estritamente maiores que g.");
+            return;
+        }
+        if (n < 1 || n > 20) {
+            mostrarErro("Erro: Horizonte (n) inválido.");
+            return;
+        }
+        if (numAcoes <= 0) {
+            mostrarErro("Erro: O número de ações deve ser maior que zero.");
+            return;
+        }
+
+        // Cálculos de Dívida e EBITDA
+        const dividaBruta = dividaCp + dividaLp;
+        const dividaLiq = dividaBruta - caixa;
+        const ebitda = ebit + depr;
+
+        // Indicadores por Ação & Balanço
+        const lpa = lucroLiq / numAcoes;
+        const vpa = patrimonioLiq / numAcoes;
+        const rpa = receita / numAcoes;
+        const dpa = dividendos / numAcoes;
+        const valorMercadoMercado = precoAtual * numAcoes;
+        const payout = lucroLiq > 0 ? (dividendos / lucroLiq) : 0;
+
+        // Ano 1 FCFF e FCFE
+        const fcff1 = (ebit * (1 - aliqIr)) + depr - capex - varWc;
+        const fcfe1 = lucroLiq + depr - capex - varWc + novasDiv - amortDiv;
+
+        // Projeção Período Explícito
+        let htmlFcff = `<table><tr><th>Ano</th><th>FCFF</th><th>Fator</th><th>VP</th></tr>`;
+        let htmlFcfe = `<table><tr><th>Ano</th><th>FCFE</th><th>Fator</th><th>VP</th></tr>`;
+        let somaVpFcff = 0, somaVpFcfe = 0;
+        let fcffAtual = fcff1, fcfeAtual = fcfe1;
+        let ultimoFcff = fcff1, ultimoFcfe = fcfe1;
+
+        for (let t = 1; t <= n; t++) {
+            if (t > 1) {
+                fcffAtual = ultimoFcff * (1 + ge);
+                fcfeAtual = ultimoFcfe * (1 + ge);
+                ultimoFcff = fcffAtual;
+                ultimoFcfe = fcfeAtual;
+            }
+            const fatorFcff = 1 / Math.pow(1 + wacc, t);
+            const vpFcff = fcffAtual * fatorFcff;
+            somaVpFcff += vpFcff;
+
+            const fatorFcfe = 1 / Math.pow(1 + ke, t);
+            const vpFcfe = fcfeAtual * fatorFcfe;
+            somaVpFcfe += vpFcfe;
+
+            htmlFcff += `<tr><td>Ano ${t}</td><td>${formatBRL(fcffAtual)}</td><td>${fatorFcff.toFixed(4)}</td><td>${formatBRL(vpFcff)}</td></tr>`;
+            htmlFcfe += `<tr><td>Ano ${t}</td><td>${formatBRL(fcfeAtual)}</td><td>${fatorFcfe.toFixed(4)}</td><td>${formatBRL(vpFcfe)}</td></tr>`;
+        }
+        htmlFcff += `</table>`;
+        htmlFcfe += `</table>`;
+
+        document.getElementById('containerTabelaFcff').innerHTML = htmlFcff;
+        document.getElementById('containerTabelaFcfe').innerHTML = htmlFcfe;
+
+        // Valor Residual & Justo
+        const fcffN1 = ultimoFcff * (1 + g);
+        const vrFcff = fcffN1 / (wacc - g);
+        const vpVrFcff = vrFcff / Math.pow(1 + wacc, n);
+        const valorFirma = somaVpFcff + vpVrFcff;
+        const patrimonioFcff = valorFirma - dividaLiq;
+        const acaoFcff = patrimonioFcff / numAcoes;
+        const potencialFcff = precoAtual > 0 ? (acaoFcff / precoAtual) - 1 : 0;
+
+        const fcfeN1 = ultimoFcfe * (1 + g);
+        const vrFcfe = fcfeN1 / (ke - g);
+        const vpVrFcfe = vrFcfe / Math.pow(1 + ke, n);
+        const patrimonioFcfe = somaVpFcfe + vpVrFcfe;
+        const acaoFcfe = patrimonioFcfe / numAcoes;
+        const potencialFcfe = precoAtual > 0 ? (acaoFcfe / precoAtual) - 1 : 0;
+
+        // Preenchimento dos Resultados de Valuation
+        document.getElementById('resFcffExplícito').innerText = formatBRL(somaVpFcff);
+        document.getElementById('resFcffVr').innerText = formatBRL(vrFcff);
+        document.getElementById('resValorFirma').innerText = formatBRL(valorFirma);
+        document.getElementById('resDividaLiq').innerText = formatBRL(dividaLiq);
+        document.getElementById('resPatrimonioFcff').innerText = formatBRL(patrimonioFcff);
+        document.getElementById('resAcaoFcff').innerText = formatBRL(acaoFcff);
+        document.getElementById('resPotencialFcff').innerText = (potencialFcff >= 0 ? '+' : '') + (potencialFcff * 100).toFixed(1) + '%';
+
+        document.getElementById('resFcfeExplícito').innerText = formatBRL(somaVpFcfe);
+        document.getElementById('resFcfeVr').innerText = formatBRL(vrFcfe);
+        document.getElementById('resPatrimonioFcfe').innerText = formatBRL(patrimonioFcfe);
+        document.getElementById('resAcaoFcfe').innerText = formatBRL(acaoFcfe);
+        document.getElementById('resPotencialFcfe').innerText = (potencialFcfe >= 0 ? '+' : '') + (potencialFcfe * 100).toFixed(1) + '%';
+
+        // Cálculo de Múltiplos
+        const plMercado = lpa > 0 && precoAtual > 0 ? precoAtual / lpa : 0;
+        const eyMercado = plMercado > 0 ? (1 / plMercado) * 100 : 0;
+        const pvpMercado = vpa > 0 && precoAtual > 0 ? precoAtual / vpa : 0;
+        const psrMercado = rpa > 0 && precoAtual > 0 ? precoAtual / rpa : 0;
+        const evMercado = valorMercadoMercado + dividaLiq;
+        const evEbitdaMercado = ebitda > 0 ? evMercado / ebitda : 0;
+
+        const evJusto = valorFirma;
+        const evEbitdaJusto = ebitda > 0 ? evJusto / ebitda : 0;
+        const plJusto = lpa > 0 ? acaoFcff / lpa : 0;
+        const pvpJusto = vpa > 0 ? acaoFcff / vpa : 0;
+
+        // Preenchimento de Indicadores e Múltiplos
+        document.getElementById('indLpa').innerText = formatBRL(lpa);
+        document.getElementById('indVpa').innerText = formatBRL(vpa);
+        document.getElementById('indRpa').innerText = formatBRL(rpa);
+        document.getElementById('indDpa').innerText = formatBRL(dpa);
+        document.getElementById('indEbitda').innerText = formatBRL(ebitda);
+        document.getElementById('indDividaBruta').innerText = formatBRL(dividaBruta);
+        document.getElementById('indDividaLiqInd').innerText = formatBRL(dividaLiq);
+        document.getElementById('indValMercado').innerText = formatBRL(valorMercadoMercado);
+
+        document.getElementById('mulPlMercado').innerText = plMercado > 0 ? plMercado.toFixed(2) + ' x' : 'N/A';
+        document.getElementById('mulEyMercado').innerText = eyMercado.toFixed(2) + '%';
+        document.getElementById('mulPvpMercado').innerText = pvpMercado > 0 ? pvpMercado.toFixed(2) + ' x' : 'N/A';
+        document.getElementById('mulPsrMercado').innerText = psrMercado > 0 ? psrMercado.toFixed(2) + ' x' : 'N/A';
+        document.getElementById('mulEvEbitdaMercado').innerText = evEbitdaMercado > 0 ? evEbitdaMercado.toFixed(2) + ' x' : 'N/A';
+        document.getElementById('mulPayout').innerText = (payout * 100).toFixed(1) + '%';
+
+        document.getElementById('mulPlJusto').innerText = plJusto > 0 ? plJusto.toFixed(2) + ' x' : 'N/A';
+        document.getElementById('mulPvpJusto').innerText = pvpJusto > 0 ? pvpJusto.toFixed(2) + ' x' : 'N/A';
+        document.getElementById('mulEvEbitdaJusto').innerText = evEbitdaJusto > 0 ? evEbitdaJusto.toFixed(2) + ' x' : 'N/A';
+
+        goToScreen(4);
+    }
+
+    // ===== BUSCA MULTI-FONTE SEM EXIGIR TOKEN =====
+    const API_BASE = 'https://brapi.dev/api/quote/';
+
+    function numAPI(x) {
+        if (x === null || x === undefined) return null;
+        if (typeof x === 'object') x = x.raw;
+        const n = Number(x);
+        return Number.isFinite(n) ? n : null;
+    }
+
+    function setCampo(id, valor, preenchidos, rotulo, casas = 2) {
+        if (valor === null || valor === undefined || !Number.isFinite(valor)) return;
+        document.getElementById(id).value = Number(valor.toFixed(casas));
+        preenchidos.push(rotulo);
+    }
+
+    function statusAPI(msg, tipo) {
+        const el = document.getElementById('apiStatus');
+        el.className = 'api-status ' + tipo;
+        el.style.whiteSpace = 'pre-line';
+        el.innerText = msg;
+    }
+
+    // Consulta cotação em tempo real no Yahoo Finance (.SA) sem chave/token
+    async function buscarCotacaoYahooSemToken(ticker) {
+        const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}.SA?interval=1d&range=5d`;
+        const proxies = [
+            `https://api.allorigins.win/raw?url=${encodeURIComponent(yahooUrl)}`,
+            `https://corsproxy.io/?url=${encodeURIComponent(yahooUrl)}`
+        ];
+        for (const proxyUrl of proxies) {
+            try {
+                const resp = await fetch(proxyUrl);
+                if (!resp.ok) continue;
+                const data = await resp.json();
+                const meta = data?.chart?.result?.[0]?.meta;
+                const preco = numAPI(meta?.regularMarketPrice);
+                if (preco && preco > 0) {
+                    return {
+                        preco,
+                        nome: meta?.longName || meta?.shortName || ticker
+                    };
+                }
+            } catch (_) {
+                // tenta o próximo proxy
+            }
+        }
+        return null;
+    }
+
+    async function buscarDadosAPI() {
+        const ticker = document.getElementById('apiTicker').value.trim().toUpperCase();
+        const token = document.getElementById('apiToken').value.trim();
+        const btn = document.getElementById('btnApi');
+
+        if (!ticker) { statusAPI('Informe um ticker.', 'err'); return; }
+
+        btn.disabled = true;
+        statusAPI('Buscando dados para ' + ticker + '...', 'ok');
+
+        try {
+            // 1) Primeiro carrega a base pré-carregada se o ativo estiver entre os 20 do Ibovespa
+            const preset = carregarAcaoPreset(ticker, false, false);
+
+            // 2) Se houver token OU se for um dos 4 tickers gratuitos da brapi (PETR4, VALE3, ITUB4, MGLU3), consulta brapi.dev
+            const podeUsarBrapi = Boolean(token) || BRAPI_FREE_TICKERS.includes(ticker);
+
+            if (podeUsarBrapi) {
+                const basicos = 'defaultKeyStatistics,financialData';
+                const completos = basicos + ',balanceSheetHistory,incomeStatementHistory,cashflowHistory';
+                const montarUrl = (mods) => API_BASE + encodeURIComponent(ticker) + '?modules=' + mods +
+                    (token ? '&token=' + encodeURIComponent(token) : '');
+
+                let resp = await fetch(montarUrl(token ? completos : basicos));
+                let json = await resp.json().catch(() => ({}));
+
+                if (token && (!resp.ok || !json.results || !json.results.length)) {
+                    resp = await fetch(montarUrl(basicos));
+                    json = await resp.json().catch(() => ({}));
+                }
+
+                if (resp.ok && json.results && json.results.length) {
+                    const r = json.results[0];
+                    const ks = r.defaultKeyStatistics || {};
+                    const fd = r.financialData || {};
+                    const primeiro = (x, chave) => {
+                        if (!x) return {};
+                        if (Array.isArray(x)) return x[0] || {};
+                        if (Array.isArray(x.data)) return x.data[0] || {};
+                        if (chave && Array.isArray(x[chave])) return x[chave][0] || {};
+                        return {};
+                    };
+                    const bs = primeiro(r.balanceSheetHistory, 'balanceSheetStatements');
+                    const is = primeiro(r.incomeStatementHistory, 'incomeStatementHistory');
+                    const cf = primeiro(r.cashflowHistory, 'cashflowStatements');
+                    const ok = [];
+
+                    const preco = numAPI(r.regularMarketPrice);
+                    setCampo('precoAtual', preco, ok, 'Preço');
+
+                    let acoes = numAPI(ks.sharesOutstanding);
+                    if (!acoes && numAPI(r.marketCap) && preco) acoes = numAPI(r.marketCap) / preco;
+                    setCampo('numAcoes', acoes, ok, 'Nº de ações', 0);
+
+                    const receita = numAPI(fd.totalRevenue) ?? numAPI(is.totalRevenue);
+                    setCampo('receita', receita, ok, 'Receita');
+
+                    const ebit = numAPI(is.ebit) ?? numAPI(is.operatingIncome);
+                    setCampo('ebit', ebit, ok, 'EBIT');
+
+                    const ebitdaAPI = numAPI(fd.ebitda);
+                    let depr = numAPI(cf.depreciation);
+                    if (depr === null && ebitdaAPI !== null && ebit !== null) depr = ebitdaAPI - ebit;
+                    setCampo('depr', depr, ok, 'D&A');
+
+                    let lucro = numAPI(is.netIncome) ?? numAPI(ks.netIncomeToCommon);
+                    if (lucro === null && numAPI(r.earningsPerShare) !== null && acoes) lucro = numAPI(r.earningsPerShare) * acoes;
+                    setCampo('lucroLiq', lucro, ok, 'Lucro líquido');
+
+                    const ir = numAPI(is.incomeTaxExpense), lair = numAPI(is.incomeBeforeTax);
+                    if (ir !== null && lair) {
+                        const aliq = (ir / lair) * 100;
+                        if (aliq > 0 && aliq < 60) setCampo('aliqIr', aliq, ok, 'Alíquota IR');
+                    }
+
+                    let pl = numAPI(bs.totalStockholderEquity);
+                    if (pl === null && numAPI(ks.bookValue) !== null && acoes) pl = numAPI(ks.bookValue) * acoes;
+                    setCampo('patrimonioLiq', pl, ok, 'PL');
+
+                    const dCp = numAPI(bs.shortLongTermDebt), dLp = numAPI(bs.longTermDebt);
+                    if (dCp !== null || dLp !== null) {
+                        setCampo('dividaCp', dCp ?? 0, ok, 'Dívida CP');
+                        setCampo('dividaLp', dLp ?? 0, ok, 'Dívida LP');
+                    } else if (numAPI(fd.totalDebt) !== null) {
+                        setCampo('dividaCp', 0, ok, 'Dívida CP');
+                        setCampo('dividaLp', numAPI(fd.totalDebt), ok, 'Dívida total (LP)');
+                    }
+                    setCampo('caixa', numAPI(bs.cash) ?? numAPI(fd.totalCash), ok, 'Caixa');
+
+                    const capex = numAPI(cf.capitalExpenditures);
+                    if (capex !== null) setCampo('capex', Math.abs(capex), ok, 'CAPEX');
+                    const div = numAPI(cf.dividendsPaid);
+                    if (div !== null) setCampo('dividendos', Math.abs(div), ok, 'Dividendos');
+
+                    const nomeEmpresa = r.longName || r.shortName || (preset ? preset.nome : ticker);
+                    atualizarBadgeAtivo(`${ticker} — ${nomeEmpresa}`);
+
+                    let msg = `✓ ${nomeEmpresa} atualizado via brapi.dev (${token ? 'com token' : 'acesso gratuito sem token'}).`;
+                    if (ok.length) msg += `
+Campos atualizados: ${ok.join(', ')}.`;
+                    if (preset) msg += `
+Demais demonstrativos e premissas mantidos da base Ibovespa.`;
+                    statusAPI(msg, 'ok');
+                    return;
+                }
+            }
+
+            // 3) Sem token para tickers fora dos 4 gratuitos da brapi: atualiza cotação ao vivo via Yahoo Finance (.SA) + usa base embutida
+            const cotacaoOnline = await buscarCotacaoYahooSemToken(ticker);
+
+            if (preset && cotacaoOnline) {
+                document.getElementById('precoAtual').value = Number(cotacaoOnline.preco.toFixed(2));
+                atualizarBadgeAtivo(`${ticker} — ${preset.nome} (Cotação Online)`);
+                statusAPI(
+                    `✓ ${ticker} — ${preset.nome} carregado sem token!
+` +
+                    `• Cotação atualizada online: ${formatBRL(cotacaoOnline.preco)}
+` +
+                    `• DRE, Balanço, Nº de ações e premissas carregados da base Ibovespa.`,
+                    'ok'
+                );
+                return;
+            }
+
+            if (preset) {
+                atualizarBadgeAtivo(`${ticker} — ${preset.nome} (Base Ibovespa)`);
+                statusAPI(
+                    `✓ ${ticker} — ${preset.nome} carregado da base embutida (100% funcional sem token e sem depender de API externa).`,
+                    'ok'
+                );
+                return;
+            }
+
+            if (cotacaoOnline) {
+                document.getElementById('precoAtual').value = Number(cotacaoOnline.preco.toFixed(2));
+                atualizarBadgeAtivo(`${ticker} — ${cotacaoOnline.nome}`);
+                statusAPI(
+                    `✓ Cotação de ${ticker} (${cotacaoOnline.nome}) atualizada online sem token: ${formatBRL(cotacaoOnline.preco)}.
+` +
+                    `Como este ativo não está na lista das 20 principais do Ibovespa, preencha os dados do balanço/DRE abaixo.`,
+                    'ok'
+                );
+                return;
+            }
+
+            throw new Error(`Não foi possível obter cotação online para ${ticker} e o ticker não está na lista das 20 ações pré-carregadas.`);
+        } catch (e) {
+            statusAPI('Aviso: ' + e.message, 'err');
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    // Inicializa lista das 20 ações ao carregar a página
+    document.addEventListener('DOMContentLoaded', inicializarSeletorAcoes);
+</script>
+
+</body>
+</html>
